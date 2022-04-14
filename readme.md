@@ -5,3 +5,8 @@ Para utilizar GitHub Desktop en una máquina virtual de Ubuntu he tenido que des
 
 Además de tener que descargar el compilador gcc con:<br>
 ```sudo apt install gcc```
+
+<br>
+
+También el compilador g++ con:<br>
+```sudo apt install g++```
