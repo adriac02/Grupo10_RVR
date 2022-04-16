@@ -3,9 +3,13 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <cstring>
+#include <unistd.h>
+#include <ctime>
+#include <string.h>
 
 int main(int argc, char** argv){
-    time_t time;
+    time_t time_aux;
+    struct tm* time_;
     //Para ayudar a los get infos
     addrinfo hints;
     //El resultado
@@ -41,7 +45,7 @@ int main(int argc, char** argv){
     bind(sd, (struct sockaddr*)result->ai_addr, result->ai_addrlen);
 
     //Creo que esto es como un delete, para que deje de consumir memoria
-    freeaddrinfo(res);
+    freeaddrinfo(result);
 
     bool end = false;
 
@@ -51,22 +55,26 @@ int main(int argc, char** argv){
 
 
         if (buffer[0] == 't') {
-            time = localtime();
-            bytes = strftime(response, 25, "%H:%M:%S %p", time);
+            time(&time_aux);
+            time_ = localtime(&time_aux);
+            bytes = strftime(response, 25, "%H:%M:%S %p", time_);
             sendto(sd, response, bytes, 0, &client_address, client_len);
         }
         else if (buffer[0] == 'd') {
-            time = localtime();
-            bytes = strftime(response, MAX_RESPONSE_LEN, "%Y-%m-%d", tm_);
-            sendto(sd, response, bytes, 0, &client_addr, client_len);
+            time(&time_aux);
+            time_ = localtime(&time_aux);
+            bytes = strftime(response, 25, "%Y-%m-%d", time_);
+            sendto(sd, response, bytes, 0, &client_address, client_len);
         }
         else if (buffer[0] == 'q') end = true;
 
-        getnameinfo((struct sockaddr*)&cliente, cliente_len, host, NI_MAXHOST,
+        getnameinfo(&client_address, client_len, host, NI_MAXHOST,
             serv, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
 
-        printf("Conexión desde Host:%s Puerto:%s\n", host, serv);
-        printf("\tMensaje(%i): %s\n", bytes, buffer);
+        // std::cout << "Conexion desde Host: " << host << " Puerto: " << serv;
+        // std::cout << "\tMensaje(" << bytes << "): " << buffer << "\n";
+        printf("Conexion desde Host:%s Puerto:%s\n", host, serv);
+        printf("\tMensaje(%li): %s\n", bytes, buffer);
     }
 
 
