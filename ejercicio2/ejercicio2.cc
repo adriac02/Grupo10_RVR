@@ -71,8 +71,7 @@ int main(int argc, char** argv){
         getnameinfo(&client_address, client_len, host, NI_MAXHOST,
             serv, NI_MAXSERV, NI_NUMERICHOST | NI_NUMERICSERV);
 
-        // std::cout << "Conexion desde Host: " << host << " Puerto: " << serv;
-        // std::cout << "\tMensaje(" << bytes << "): " << buffer << "\n";
+
         printf("Conexion desde Host:%s Puerto:%s\n", host, serv);
         printf("\tMensaje(%li): %s\n", bytes, buffer);
     }
