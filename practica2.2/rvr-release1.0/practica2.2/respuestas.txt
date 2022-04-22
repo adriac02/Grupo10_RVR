@@ -1,0 +1,2 @@
+¿Qué hace el comando od? Permite ver el contenido byte a byte
+¿Qué relación hay entre la salida del comando y la serialización? La salida del comando es la conversión a Asci de la serialización
