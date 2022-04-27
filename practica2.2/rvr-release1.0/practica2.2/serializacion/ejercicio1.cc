@@ -27,22 +27,22 @@ public:
 
         char* temporary = _data;
 
-        memccpy(temporary, name, 80 * sizeof(char));
+        memcpy(temporary, name, 80 * sizeof(char));
 
-        temp += sizeof(char);
+        temporary += sizeof(char);
 
-        memccpy(temp, &x, sizeof(int16_t));    
+        memcpy(temporary, &x, sizeof(int16_t));    
     }
 
     int from_bin(char * data)
     {
         char* aux = data;
 
-        memccpy(name, temp, 80 * sizeof(char));
+        memcpy(name, aux , 80 * sizeof(char));
 
         aux += 80 * sizeof(char);
 
-        memccpy(&x, aux, int16_t);
+        memcpy(&x, aux, sizeof(int16_t));
 
 
         return 0;
@@ -64,19 +64,19 @@ int main(int argc, char **argv)
     // 1. Serializar el objeto one_w
     one_w.to_bin();
     // 2. Escribir la serialización en un fichero
-    int fd = fopen(",/jugador.bin", O_CREAT | O_TRUNC | O_RDWR, 0666);
-    fwrite(fd, one_w.data(), one_w.size());
-    fclose(fd);
+    int fd = open(",/jugador.bin", O_CREAT | O_TRUNC | O_RDWR, 0666);
+    write(fd, one_w.data(), one_w.size());
+    close(fd);
     // 3. Leer el fichero
     char buffer[256];
-    fd = fopen(",/jugador.bin", O_RDONLY);
+    fd = open(",/jugador.bin", O_RDONLY);
 
-    fread(fd, buffer, 256);
-    fclose(fd);
+    read(fd, buffer, 256);
+    close(fd);
     // 4. "Deserializar" en one_r
     one_r.from_bin(buffer);
     // 5. Mostrar el contenido de one_r
-
+    printf("NAME: %s, X: %i, Y: %i\n",one_w.name,one_w.x,one_w.y);
     return 0;
 }
 
