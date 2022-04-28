@@ -52,6 +52,37 @@ void ChatServer::do_messages()
         // - LOGIN: Añadir al vector clients
         // - LOGOUT: Eliminar del vector clients
         // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
+
+        ChatMessage msg;
+        Socket* sock;
+
+        socket.recv(msg,sock);
+        if(msg.type == ChatMessage::LOGIN){
+            printf("Conectado: %s\n",msg.nick);
+            clients.push_back(std::move(std::make_unique<Socket>(*sock)));
+        }
+        else if(msg.type == ChatMessage::LOGOUT){
+            auto it = clients.begin();
+
+            while(it!=clients.end() && !(**it==*sock)) ++it;
+
+            if(it==clients.end()){
+                printf("Cliente no encontrado\n");
+            }
+            else{
+                printf("Cliente desconectado: %s\n",msg.nick);
+                clients.erase(it);
+                Socket* del = (*it).release();
+                delete del;
+            }
+        }
+        else if(ChatMessage::MESSAGE){
+            for(int i = 0; i < clients.size(); ++i){
+                if(!(*clients[i]==*sock)) {
+                    socket.send(msg,*clients[i]);
+                }
+            }
+        }
     }
 }
 
@@ -71,6 +102,12 @@ void ChatClient::login()
 void ChatClient::logout()
 {
     // Completar
+    std::string msg;
+
+    ChatMessage em(nick, msg);
+    em.type = ChatMessage::LOGOUT;
+
+    socket.send(em, socket);
 }
 
 void ChatClient::input_thread()
@@ -79,6 +116,16 @@ void ChatClient::input_thread()
     {
         // Leer stdin con std::getline
         // Enviar al servidor usando socket
+        std::string msg;
+        std::getline(std::cin,msg);
+        if(msg=="q"){
+            logout();
+        }
+        else{
+            ChatMessage msgC(nick,msg);
+            msgC.type = ChatMessage::MESSAGE;
+            socket.send(msgC, socket);
+        }
     }
 }
 
@@ -88,6 +135,9 @@ void ChatClient::net_thread()
     {
         //Recibir Mensajes de red
         //Mostrar en pantalla el mensaje de la forma "nick: mensaje"
+        ChatMessage msg;
+        socket.recv(msg);
+        printf("%s: %s\n", msg.nick,msg.message);
     }
 }
 
