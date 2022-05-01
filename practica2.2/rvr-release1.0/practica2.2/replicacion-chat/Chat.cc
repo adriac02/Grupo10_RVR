@@ -11,10 +11,13 @@ void ChatMessage::to_bin()
 
     //Serializar los campos type, nick y message en el buffer _data
     char* temporary = _data;
+
     memcpy(temporary, &type, sizeof(uint8_t));
-    temporary+=sizeof(uint8_t);
+    temporary += sizeof(uint8_t);
+
     memcpy(temporary, nick.c_str(), 8 * sizeof(char));
     temporary += 8 * sizeof(char);
+
     memcpy(temporary, message.c_str(), 80 * sizeof(char));
 }
 
@@ -26,10 +29,13 @@ int ChatMessage::from_bin(char * bobj)
 
     //Reconstruir la clase usando el buffer _data
     char* temporary = _data;
+
     memcpy(&type, temporary, sizeof(uint8_t));
-    temporary+=sizeof(uint8_t);
+    temporary += sizeof(uint8_t);
+
     nick = temporary;
     temporary += 8 * sizeof(char);
+
     message = temporary;
 
     return 0;
@@ -40,6 +46,7 @@ int ChatMessage::from_bin(char * bobj)
 
 void ChatServer::do_messages()
 {
+
     while (true)
     {
         /*
@@ -54,11 +61,12 @@ void ChatServer::do_messages()
         // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
 
         ChatMessage msg;
-        Socket* sock;
+        Socket* sock = new Socket(socket);
 
         socket.recv(msg,sock);
+
         if(msg.type == ChatMessage::LOGIN){
-            printf("Conectado: %s\n",msg.nick);
+            std::cout << "Conectado:" << msg.nick << "\n";
             clients.push_back(std::move(std::make_unique<Socket>(*sock)));
         }
         else if(msg.type == ChatMessage::LOGOUT){
@@ -70,7 +78,7 @@ void ChatServer::do_messages()
                 printf("Cliente no encontrado\n");
             }
             else{
-                printf("Cliente desconectado: %s\n",msg.nick);
+                std::cout << "Desconectado:" << msg.nick << "\n";
                 clients.erase(it);
                 Socket* del = (*it).release();
                 delete del;
@@ -118,6 +126,7 @@ void ChatClient::input_thread()
         // Enviar al servidor usando socket
         std::string msg;
         std::getline(std::cin,msg);
+
         if(msg=="q"){
             logout();
         }
@@ -131,13 +140,16 @@ void ChatClient::input_thread()
 
 void ChatClient::net_thread()
 {
+    ChatMessage msg;
+    Socket* sock = new Socket(socket);
     while(true)
     {
+        
         //Recibir Mensajes de red
         //Mostrar en pantalla el mensaje de la forma "nick: mensaje"
-        ChatMessage msg;
-        socket.recv(msg);
-        printf("%s: %s\n", msg.nick,msg.message);
+        socket.recv(msg, sock);
+
+        std::cout << msg.nick << ": " << msg.message << "\n";
     }
 }
 

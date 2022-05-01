@@ -22,6 +22,16 @@ Socket::Socket(const char * address, const char * port):sd(-1)
 
     rc = getaddrinfo(address, port, &hints, &result);
     sd = socket(result->ai_family, result->ai_socktype, 0);
+
+    if(rc != 0){
+        std::cout << "Fallo terminal, error getaddrinfo" <<"\n";
+    }
+    if(sd == -1){
+        std::cout << "Fallo terminal de socket" <<"\n";
+    }
+
+    sa = (struct sockaddr)*(result->ai_addr);
+    sa_len = (result->ai_addrlen);
 }
 
 int Socket::recv(Serializable &obj, Socket * &sock)
@@ -44,7 +54,6 @@ int Socket::recv(Serializable &obj, Socket * &sock)
     }
 
     obj.from_bin(buffer);
-
     return 0;
 }
 
@@ -54,8 +63,8 @@ int Socket::send(Serializable& obj, const Socket& sock)
     //Enviar el objeto binario a sock usando el socket sd
 
     obj.to_bin();
-    sendto(sock.sd, obj.data(), obj.size(), 0, &sock.sa, sock.sa_len);
-    return 0;
+    int e = sendto(sd, obj.data(), obj.size(), 0, &sock.sa, sock.sa_len);
+    return e;
 }
 
 bool operator== (const Socket &s1, const Socket &s2)
